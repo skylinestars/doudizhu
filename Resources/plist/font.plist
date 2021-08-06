@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist>
+	<dict>
+		<key>1001</key>
+		<string>资源加载</string>
+	</dict>
+	<dict>
+		<key>1002</key>
+		<string>用户名：</string>
+	</dict>
+	<dict>
+		<key>1003</key>
+		<string>密码：</string>
+	</dict>
+	<dict>
+		<key>1004</key>
+		<string>登录</string>
+	</dict>
+	<dict>
+		<key>1005</key>
+		<string>注册</string>
+	</dict>
+	<dict>
+		<key>1006</key>
+		<string>确认密码：</string>
+	</dict>
+	<dict>
+		<key>1007</key>
+		<string>返回登录</string>
+	</dict>
+	<dict>
+		<key>1008</key>
+		<string>注册登录</string>
+	</dict>
+	<dict>
+		<key>1009</key>
+		<string>岁月静好</string>
+	</dict>
+
+	
+</plist>
