@@ -26,6 +26,8 @@
 #include "View/LoadingScene.h"
 #include "View/LoginScene.h"
 #include "View/IndexScene.h"
+#include "HelloWorldScene.h"
+#include "View/GameRoom.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -83,7 +85,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     }
 
     // turn on display FPS
-    director->setDisplayStats(true);
+    director->setDisplayStats(false);
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
@@ -113,9 +115,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     //auto scene = HelloWorld::createScene();
     //auto scene = LoadingScene::createScene();
    // auto scene = LoginScene::createScene();
-   // 
-    auto scene = IndexScene::createScene();
-    // run
+    //auto scene = IndexScene::createScene();
+    auto scene = GameRoom::createScene();
     director->runWithScene(scene);
   
     return true;

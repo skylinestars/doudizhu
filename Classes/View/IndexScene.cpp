@@ -1,5 +1,7 @@
 #include "IndexScene.h"
 #include "../Controller/ConfigController.h"
+#include "../Tool/DrawTool.h"
+
 
 Scene* IndexScene::createScene()
 {
@@ -96,6 +98,8 @@ bool IndexScene::init()
 	auto recordText = Sprite::create("images/index/BtnLabelzj.png");
 	recordPanel->addChild(recordText);
 	recordText->setPosition(Vec2(settingPanel->getContentSize().width / 2, settingPanel->getContentSize().height / 2));
+	
+	createRoomBg = createRoom(bg);
 	return true;
 }
 
@@ -135,13 +139,17 @@ void IndexScene::createFK(Vec2 position, Sprite* parentSprite, MoneyType moneyTy
 void IndexScene::createGameList(Sprite* parentSprite)
 {
 	float createRoomPadding = 40;
-	auto createRoom = Sprite::create("images/index/btnCreateRoom.png");
+	auto createRoom = Button::create("images/index/btnCreateRoom.png");
 	parentSprite->addChild(createRoom);
 	createRoom->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
 	createRoom->setPosition(Vec2(
 		(parentSprite->getContentSize().width - 2 * createRoom->getContentSize().width - 2 * createRoomPadding) / 2,
 		parentSprite->getContentSize().height / 2
 	));
+	createRoom->addClickEventListener([&](Ref* sender)
+		{
+			createRoomBg->setVisible(true);
+		});
 
 	auto joinRoom = Sprite::create("images/index/btnJoinRoom.png");
 	parentSprite->addChild(joinRoom);
@@ -161,4 +169,128 @@ void IndexScene::createGameList(Sprite* parentSprite)
 		joinRoom->getPosition().x + createRoom->getContentSize().width + createRoomPadding,
 		parentSprite->getContentSize().height / 2 - 10));
 
+}
+
+Sprite* IndexScene::createRoom(Sprite* parentSprite)
+{
+	auto bg = Sprite::create("images/createRoom/BG_1280_720.jpg");
+	parentSprite->addChild(bg, 3);
+	bg->setPosition(parentSprite->getContentSize()/2);
+
+	auto returnIndex = Button::create("images/createRoom/btnBackBlue.png");
+	returnIndex->setAnchorPoint(Vec2::ANCHOR_MIDDLE_LEFT);
+	bg->addChild(returnIndex);
+	returnIndex->setPosition(Vec2(20, bg->getContentSize().height - 50));
+	returnIndex->addClickEventListener([bg](Ref* sender)
+		{
+			bg->setVisible(false);
+		});
+
+	auto title = Sprite::create("images/createRoom/textCreateRoomBlue.png");
+	bg->addChild(title);
+	title->setPosition(Vec2(bg->getContentSize().width/2, bg->getContentSize().height-50));
+
+	auto line = Sprite::create("images/createRoom/lineCreateRoom.png");
+	bg->addChild(line);
+	line->setAnchorPoint(Vec2::ANCHOR_MIDDLE_TOP);
+	line->setPosition(Vec2(325, bg->getContentSize().height - 159));
+
+	//创建房间的选项面板
+	DrawNode* rightPanelDraw = DrawNode::create();
+	bg->addChild(rightPanelDraw);
+	Vec2 originrightPanel(365, bg->getContentSize().height - 159);
+	Vec2 destinationrightPanel(bg->getContentSize().width - 40, 200);
+	DrawTool::drawRoundRect(rightPanelDraw, originrightPanel,
+		destinationrightPanel,
+		8, 15, true, Color4F(1, 1, 1, 0.5));
+
+	//创建房间按钮
+	auto createRoomBtn = Button::create("images/createRoom/btnGreen.png");
+	bg->addChild(createRoomBtn);
+	createRoomBtn->setPosition(Vec2((bg->getContentSize().width + line->getPosition().x) / 2, 100));
+	auto createRoomText = Sprite::create("images/createRoom/textCreateRoomGreen.png");
+	createRoomBtn->addChild(createRoomText);
+	createRoomText->setPosition(createRoomBtn->getContentSize() / 2);
+
+	auto leftListBg = Sprite::create("images/createRoom/bgGameTypeA.png");
+	bg->addChild(leftListBg);
+	leftListBg->setPosition(Vec2(leftListBg->getContentSize().width/2+20, bg->getContentSize().height - 200));
+	
+	auto leftListText = Label::createWithSystemFont(
+		ConfigController::getInstance()->getWordById(1010), "Arial", 40);
+	leftListBg->addChild(leftListText);
+	leftListText->setPosition(leftListBg->getContentSize()/2);
+	leftListText->enableBold();
+
+	auto diFen = Label::createWithSystemFont(
+		ConfigController::getInstance()->getWordById(1011), "Arial", 40);
+	rightPanelDraw->addChild(diFen);
+	diFen->setColor(Color3B(156, 98, 61));
+	diFen->setPosition(originrightPanel+
+		Vec2(
+			diFen->getContentSize().width/2 + 30, 
+			-diFen->getContentSize().height/2-30));
+
+
+	auto radio5 = createRadio(
+		rightPanelDraw, 
+		diFen->getPosition() + Vec2(120, 0), 
+		"5"+ ConfigController::getInstance()->getWordById(1012));
+
+	auto radio10 = createRadio(
+		rightPanelDraw,
+		diFen->getPosition() + Vec2(420, 0),
+		"10" + ConfigController::getInstance()->getWordById(1012));
+
+	auto radio20 = createRadio(
+		rightPanelDraw,
+		diFen->getPosition() + Vec2(720, 0),
+		"20" + ConfigController::getInstance()->getWordById(1012));
+	Vector<CheckBox*> cbList;
+	cbList.pushBack(radio5);
+	cbList.pushBack(radio10);
+	cbList.pushBack(radio20);
+	groupRadio(cbList);
+
+	return bg;
+}
+
+CheckBox* IndexScene::createRadio(Node* parentSprite, Vec2 pos, std::string name)
+{
+	auto radio = CheckBox::create("images/createRoom/circleNone.png",
+		"images/createRoom/circleNone.png",
+		"images/createRoom/circleGreen.png",
+		"images/createRoom/circleGreen.png",
+		"images/createRoom/circleGreen.png");
+	radio->setName(name);
+	parentSprite->addChild(radio);
+	radio->setPosition(pos);
+
+	auto text = Label::createWithSystemFont(name, "Arial", 40);
+	text->setColor(Color3B(156, 98, 61));
+	parentSprite->addChild(text);
+	text->setPosition(radio->getPosition()+Vec2(80, 0));
+	return radio;
+}
+
+void IndexScene::groupRadio(Vector<CheckBox*> checkBoxs)
+{
+	for (int i=0; i<checkBoxs.size(); i++)
+	{
+		checkBoxs.at(i)->addClickEventListener([=](Ref* sender)
+			{
+				CheckBox* cb = (CheckBox*)sender;
+				if (cb->isSelected()==false)
+				{
+					for (int j=0; j< checkBoxs.size(); j++)
+					{
+						if (i==j)
+						{
+							continue;
+						}
+						checkBoxs.at(j)->setSelected(false);
+					}
+				}
+			});
+	}
 }
