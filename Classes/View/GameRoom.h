@@ -15,5 +15,9 @@ public:
 private:
 	void createPlayerInfo(Sprite* parent, Vec2 pos);
 	void createPreparePanel(Node* parent);
-
+	void createPlayGame(Node* parent);
+	void shuffleCards();
+	bool selectPoker(Sprite* poker, const Touch* touch, Event* event);
+	Sprite* testSprite;
+	float middlePokerY;
 };

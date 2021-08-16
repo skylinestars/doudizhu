@@ -4,7 +4,7 @@
 ConfigController* ConfigController::_instance = nullptr;
 
 ConfigController::ConfigController():
-    _scale(0.8f)
+    _scale(1.0f)
 {
     initWord();
 }

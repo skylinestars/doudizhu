@@ -52,6 +52,10 @@
 		<key>1013</key>
 		<string>万</string>
 	</dict>
+	<dict>
+		<key>1014</key>
+		<string>房间号：</string>
+	</dict>
 
 	
 </plist>
