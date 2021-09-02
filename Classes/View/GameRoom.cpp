@@ -1,6 +1,8 @@
 #include "GameRoom.h"
 #include "../Controller/ConfigController.h"
 #include "../Tool/DrawTool.h"
+#include "AudioEngine.h"
+
 
 Scene* GameRoom::createScene()
 {
@@ -13,6 +15,10 @@ bool GameRoom::init()
 	{
 		return false;
 	}
+	middlePokerY = 171;
+	pokerWidth = 90;
+	pokerSpace = pokerWidth * 5 / 12;
+
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -51,14 +57,19 @@ bool GameRoom::init()
 	desk->addChild(gamePreparePanel);
 	createPreparePanel(gamePreparePanel);
 
-	//游戏发牌
-	shuffleCards();
 	//玩家信息--中
 	createPlayerInfo(bg, Vec2(70, 126.3f));
 	//玩家信息--左
 	createPlayerInfo(bg, Vec2(70, bg->getContentSize().height/2+200));
 	//玩家信息--右
 	createPlayerInfo(bg, Vec2(bg->getContentSize().width - 70, bg->getContentSize().height / 2+200));
+
+	//模拟数据
+	std::vector<Poker> myPokers;
+	roomController.createPoker(nullptr, myPokers);
+	roomController.sortPoker(myPokers);
+	//游戏发牌
+	shuffleCards(myPokers);
 	
 	return true;
 }
@@ -139,54 +150,98 @@ void GameRoom::createPlayGame(Node* parent)
 
 }
 
-void GameRoom::shuffleCards()
+void GameRoom::shuffleCards(std::vector<Poker>& myPokers)
 {
+	auto pokerNode = Node::create();
+	auto spritecache = SpriteFrameCache::getInstance();
+	spritecache->addSpriteFramesWithFile("plist/poker.plist");
+	int num = 17;
+	int length = num - 1;
+	float startPosX = this->getContentSize().width / 2;
+	Sprite* firstPoker = nullptr;
+	float myPokerStartPosX = (this->getContentSize().width - pokerSpace * (num - 1)) / 2;
+	for (int i = 0; i < num; i++)
+	{
+		char str[10];
+		sprintf(str, "%d.png", myPokers.at(i).id);
+		auto spritePoker = Sprite::createWithSpriteFrameName(str);
+		if (i == length)
+		{
+			firstPoker = spritePoker;
+			this->addChild(spritePoker,1);
+			spritePoker->setPosition(Vec2(this->getContentSize().width / 2, middlePokerY));
+		}
+		else
+		{
+			pokerNode->addChild(spritePoker);
+			spritePoker->setPosition(Vec2(startPosX + pokerSpace * i, middlePokerY));
+		}
+		auto myPokerSprite = Sprite::createWithSpriteFrameName(str);
+		myPokersSprite.push_back(myPokerSprite);
+		this->addChild(myPokerSprite);
+		myPokerSprite->setVisible(false);
+		myPokerSprite->setPosition(Vec2(myPokerStartPosX + pokerSpace * i, middlePokerY));
+	}
+	auto pokerMask = ClippingNode::create();
+	DrawNode* drawNode = DrawNode::create();
+	Vec2 origin(this->getContentSize().width / 2, middlePokerY+60);
+	Vec2 destination(this->getContentSize().width / 2 + 15* pokerSpace + 45, middlePokerY -60);
+	DrawTool::drawRoundRect(drawNode, origin, destination, 1, 1, true, Color4F::BLUE);
+	pokerMask->setInverted(true);
+	pokerMask->setAlphaThreshold(0.0f);
+	pokerMask->setStencil(drawNode);
+	pokerMask->addChild(pokerNode);
+	addChild(pokerMask);
+	
+	float moveTime = 4;
+	auto moveBy = MoveBy::create(moveTime, Vec2(-pokerSpace * 8 , 0));
+	pokerNode->runAction(Sequence::createWithTwoActions(moveBy, 
+		CallFunc::create([=]()
+		{
+				for (auto myPokerSprite : myPokersSprite)
+				{
+					myPokerSprite->setVisible(true);
+					pokerAddTouch(myPokerSprite, nullptr);
+				}
+				pokerNode->removeAllChildren();
+				firstPoker->removeFromParent();
+			
+		})));
+	auto moveBy16 = MoveBy::create(moveTime, Vec2(pokerSpace * 8 , 0));
+	firstPoker->runAction(moveBy16);
+	auto maskNodeNoveBy = MoveBy::create(moveTime, Vec2(pokerSpace * 8, 0));
+	drawNode->runAction(maskNodeNoveBy);
 
+	//播放发牌音效
+	auto soundEffectID = AudioEngine::play2d("music/room/Special_Dispatch.mp3", false);
+	
+	//其他玩家发牌
+	othersShuffleCards();
+}
+
+bool GameRoom::selectPoker(Sprite* poker, const Touch* touch, Event* event)
+{
 	//中
 	auto spritecache = SpriteFrameCache::getInstance();
 	spritecache->addSpriteFramesWithFile("plist/poker.plist");
-	float startPosX = 0;
-	Vec2 startPos = Vec2(300, 145);
 	int num = 17;
-	middlePokerY = 171;
+	float startPosX  = (this->getContentSize().width - pokerSpace * (num - 1)) / 2;
+	
 	for (int i = 0; i < num; i++)
 	{
 		char str[10];
 		sprintf(str, "%d.png", i);
 		auto spritePoker = Sprite::createWithSpriteFrameName(str);
 		spritePoker->setTag(i);
-		if (startPosX == 0)
-		{
-			startPosX = this->getContentSize().width / 2 - (5 * num - 3) * spritePoker->getContentSize().width / 24;
-		}
 		this->addChild(spritePoker);
-		
-		spritePoker->setPosition(Vec2(startPosX + spritePoker->getContentSize().width * i * 5 / 12, middlePokerY));
+		spritePoker->setPosition(Vec2(startPosX + pokerSpace * i, middlePokerY));
 		auto listener = EventListenerTouchOneByOne::create();
-		Vec2 beginPos;
 		listener->onTouchBegan = [=](Touch* touch, Event* event) {
-			//spritePoker->setPosition(Vec2(touch->getLocation().x, touch->getLocation().y));
-			//log("%f;%f", touch->getLocation().x, touch->getLocation().y);
-			//return selectPoker(spritePoker, touch, event);
-			
-			/*if (spritePoker->getBoundingBox().containsPoint(touch->getLocation()))
-			{
-
-				return true;
-			}
-			else
-			{
-				return false;
-			}*/
-			//beginPos = touch->getLocation();
 			return true;
-
 		};
-		//ccTouchCallback onTouchMoved;
-		//ccTouchCallback onTouchEnded;
+
 		listener->onTouchMoved = [=](Touch* touch, Event* event)
 		{
-			//log("%f,%f,%f", spritePoker->getColor().r, spritePoker->getColor().g, spritePoker->getColor().b);
 			if (spritePoker->getBoundingBox().containsPoint(touch->getLocation()))
 			{
 				spritePoker->setColor(Color3B(220, 220, 220));
@@ -195,7 +250,24 @@ void GameRoom::shuffleCards()
 		};
 		listener->onTouchEnded = [=](Touch* touch, Event* event)
 		{
-			
+
+			Vec2 start = touch->getStartLocation();
+			Vec2 end = touch->getLocation();
+			if (start == end)
+			{
+				if (spritePoker->getBoundingBox().containsPoint(touch->getLocation()))
+				{
+					if (fabs(spritePoker->getPositionY() - middlePokerY) < 0.0001)
+					{
+						spritePoker->setPositionY(middlePokerY + 20);
+					}
+					else
+					{
+						spritePoker->setPositionY(middlePokerY);
+					}
+					event->stopPropagation();
+				}
+			}
 
 			if (spritePoker->getColor().equals(Color3B(220, 220, 220)))
 			{
@@ -224,7 +296,7 @@ void GameRoom::shuffleCards()
 			}*/
 		};
 
-		
+
 		this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, spritePoker);
 	}
 
@@ -232,11 +304,11 @@ void GameRoom::shuffleCards()
 	auto pokerLeft = Sprite::createWithSpriteFrameName("63.png");
 	this->addChild(pokerLeft);
 	pokerLeft->setScale(0.5f);
-	pokerLeft->setPosition(258,490);
+	pokerLeft->setPosition(258, 490);
 	auto pokerNumLeft = Label::createWithSystemFont("17", "Arial", 40);
 	pokerLeft->addChild(pokerNumLeft);
 	pokerNumLeft->setColor(Color3B::WHITE);
-	pokerNumLeft->setPosition(pokerLeft->getContentSize()/2);
+	pokerNumLeft->setPosition(pokerLeft->getContentSize() / 2);
 
 	//右
 	auto pokerRight = Sprite::createWithSpriteFrameName("63.png");
@@ -247,28 +319,103 @@ void GameRoom::shuffleCards()
 	pokerRight->addChild(pokerNumRight);
 	pokerNumRight->setColor(Color3B::WHITE);
 	pokerNumRight->setPosition(pokerLeft->getContentSize() / 2);
-		
+
+	return true;
 }
 
-bool GameRoom::selectPoker(Sprite* poker, const Touch* touch, Event* event)
+void GameRoom::pokerAddTouch(Sprite* spritePoker, Node* node)
 {
-	if (poker->getBoundingBox().containsPoint(touch->getLocation())) 
-	{
-
-		if (poker->getPositionY() == middlePokerY)
-		{
-			poker->setPositionY(middlePokerY + 20);
-		}
-		else
-		{
-			poker->setPositionY(middlePokerY);
-		}
-		event->stopPropagation();
+	auto listener = EventListenerTouchOneByOne::create();
+	listener->onTouchBegan = [=](Touch* touch, Event* event) {
 		return true;
-	}
-	else
+	};
+
+	listener->onTouchMoved = [=](Touch* touch, Event* event)
 	{
-		return false;
-	}	
+		if (spritePoker->getBoundingBox().containsPoint(touch->getLocation()))
+		{
+			spritePoker->setColor(Color3B(220, 220, 220));
+			event->stopPropagation();
+		}
+	};
+	listener->onTouchEnded = [=](Touch* touch, Event* event)
+	{
+		Vec2 start = touch->getStartLocation();
+		Vec2 end = touch->getLocation();
+		if (start == end)
+		{
+			if (spritePoker->getBoundingBox().containsPoint(touch->getLocation()))
+			{
+				if (fabs(spritePoker->getPositionY() - middlePokerY) < 0.0001)
+				{
+					spritePoker->setPositionY(middlePokerY + 20);
+				}
+				else
+				{
+					spritePoker->setPositionY(middlePokerY);
+				}
+				event->stopPropagation();
+			}
+		}
+
+		if (spritePoker->getColor().equals(Color3B(220, 220, 220)))
+		{
+			spritePoker->setColor(Color3B::WHITE);
+			if (fabs(spritePoker->getPositionY() - middlePokerY) < 0.0001)
+			{
+				spritePoker->setPositionY(middlePokerY + 20);
+			}
+			else
+			{
+				spritePoker->setPositionY(middlePokerY);
+			}
+
+		}
+	};
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener->clone(), spritePoker);
 }
+
+void GameRoom::othersShuffleCards()
+{
+	//左
+	pokerLeft = Sprite::createWithSpriteFrameName("63.png");
+	this->addChild(pokerLeft);
+	pokerLeft->setScale(0.5f);
+	pokerLeft->setPosition(258, 490);
+	pokerNumLeft = Label::createWithSystemFont("17", "Arial", 40);
+	pokerLeft->addChild(pokerNumLeft);
+	pokerNumLeft->setColor(Color3B::WHITE);
+	pokerNumLeft->setPosition(pokerLeft->getContentSize() / 2);
+
+	//右
+	pokerRight = Sprite::createWithSpriteFrameName("63.png");
+	this->addChild(pokerRight);
+	pokerRight->setScale(0.5f);
+	pokerRight->setPosition(this->getContentSize().width - 258, 490);
+	pokerNumRight = Label::createWithSystemFont("17", "Arial", 40);
+	pokerRight->addChild(pokerNumRight);
+	pokerNumRight->setColor(Color3B::WHITE);
+	pokerNumRight->setPosition(pokerLeft->getContentSize() / 2);
+
+	othersPokerNum = 0;
+	this->schedule(SEL_SCHEDULE(&GameRoom::othersShuffleCardsHandle), 0.23f);
+}
+
+void GameRoom::othersShuffleCardsHandle(float dt)
+{
+	othersPokerNum++;
+	char str[10];
+	sprintf(str, "%d", othersPokerNum);
+	pokerNumLeft->setString(str);
+	pokerNumRight->setString(str);
+	if (othersPokerNum==17)
+	{
+		this->unschedule(SEL_SCHEDULE(&GameRoom::othersShuffleCardsHandle));
+	}
+}
+
+void GameRoom::sortCards()
+{
+}
+
 

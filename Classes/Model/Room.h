@@ -19,6 +19,6 @@ public:
 	RoomType roomType;//房间类型
 	int bottomScore;//底分
 	User players[3];//玩家
-	int seat[3];
+	int seat[3];//座位
 	
 };
