@@ -56,6 +56,14 @@
 		<key>1014</key>
 		<string>房间号：</string>
 	</dict>
+	<dict>
+		<key>1015</key>
+		<string>解散房间</string>
+	</dict>
+	<dict>
+		<key>1016</key>
+		<string>游戏准备</string>
+	</dict>
 
 	
 </plist>
