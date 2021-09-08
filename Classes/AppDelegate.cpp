@@ -115,7 +115,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     //auto scene = HelloWorld::createScene();
     //auto scene = LoadingScene::createScene();
    // auto scene = LoginScene::createScene();
-    //auto scene = IndexScene::createScene();
+   // auto scene = IndexScene::createScene();
     auto scene = GameRoom::createScene();
     director->runWithScene(scene);
   

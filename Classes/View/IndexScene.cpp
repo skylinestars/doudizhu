@@ -67,7 +67,7 @@ bool IndexScene::init()
 		MoneyType::Gold
 		);
 	createFK(
-		Vec2(headBg->getContentSize().width + 300,
+		Vec2(headBg->getContentSize().width + 250,
 			bg->getContentSize().height - headPadding -30),
 		bg,
 		MoneyType::Diamond
@@ -77,17 +77,18 @@ bool IndexScene::init()
 	createGameList(bg);
 	
 	//创建导航
+	float navStartX = bg->getContentSize().width - 35;
 	auto hallBtnDi = Sprite::create("images/index/HallBtnDi.png");
 	bg->addChild(hallBtnDi);
 	hallBtnDi->setAnchorPoint(Vec2::ANCHOR_BOTTOM_RIGHT);
 	hallBtnDi->setPosition(Vec2(bg->getContentSize().width, 0));
 	auto hallHide = Sprite::create("images/index/HallMoreBtn0.png");
 	bg->addChild(hallHide);
-	hallHide->setPosition(Vec2(bg->getContentSize().width-95, hallBtnDi->getContentSize().height/2));
+	hallHide->setPosition(Vec2(navStartX, hallBtnDi->getContentSize().height/2));
 	
 	auto settingPanel = Sprite::create("images/index/HallFX.png");
 	bg->addChild(settingPanel);
-	settingPanel->setPosition(Vec2(bg->getContentSize().width - 300, 45));
+	settingPanel->setPosition(Vec2(navStartX-205, 45));
 	auto settingText = Sprite::create("images/index/BtnLabelSetting.png");
 	settingPanel->addChild(settingText);
 	settingText->setPosition(Vec2(settingPanel->getContentSize().width/2, settingPanel->getContentSize().height/2));
@@ -193,12 +194,12 @@ Sprite* IndexScene::createRoom(Sprite* parentSprite)
 	auto line = Sprite::create("images/createRoom/lineCreateRoom.png");
 	bg->addChild(line);
 	line->setAnchorPoint(Vec2::ANCHOR_MIDDLE_TOP);
-	line->setPosition(Vec2(325, bg->getContentSize().height - 159));
+	line->setPosition(Vec2(bg->getContentSize().width*1/5+10, bg->getContentSize().height - 159));
 
 	//创建房间的选项面板
 	DrawNode* rightPanelDraw = DrawNode::create();
 	bg->addChild(rightPanelDraw);
-	Vec2 originrightPanel(365, bg->getContentSize().height - 159);
+	Vec2 originrightPanel(310, bg->getContentSize().height - 159);
 	Vec2 destinationrightPanel(bg->getContentSize().width - 40, 200);
 	DrawTool::drawRoundRect(rightPanelDraw, originrightPanel,
 		destinationrightPanel,
@@ -239,12 +240,12 @@ Sprite* IndexScene::createRoom(Sprite* parentSprite)
 
 	auto radio10 = createRadio(
 		rightPanelDraw,
-		diFen->getPosition() + Vec2(420, 0),
+		diFen->getPosition() + Vec2(320, 0),
 		"10" + ConfigController::getInstance()->getWordById(1012));
 
 	auto radio20 = createRadio(
 		rightPanelDraw,
-		diFen->getPosition() + Vec2(720, 0),
+		diFen->getPosition() + Vec2(520, 0),
 		"20" + ConfigController::getInstance()->getWordById(1012));
 	Vector<CheckBox*> cbList;
 	cbList.pushBack(radio5);

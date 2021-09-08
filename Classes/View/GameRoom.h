@@ -17,14 +17,15 @@ public:
 private:
 	void createPlayerInfo(Sprite* parent, Vec2 pos);
 	void createPreparePanel(Node* parent);
-	void createPlayGame(Node* parent);
 	bool selectPoker(Sprite* poker, const Touch* touch, Event* event);
 	void pokerAddTouch(Sprite* poker, Node* node);
-
 	void shuffleCards(std::vector<Poker>& myPokers);//发牌动画
 	void othersShuffleCards();//其他玩家发牌动画
 	void othersShuffleCardsHandle(float dt);
 	void sortCards();
+	void callDiZhuBtn(Node* parentNode);
+	void robDiZhuBtn(Node* parentNode);
+	void playPokerBtn(Node* parentNode);
 private:
 	Sprite* testSprite;
 	float middlePokerY;

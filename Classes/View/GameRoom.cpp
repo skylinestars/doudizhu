@@ -54,7 +54,7 @@ bool GameRoom::init()
 	//游戏准备面板
 	auto gamePreparePanel = Node::create();
 	gamePreparePanel->setVisible(false);
-	desk->addChild(gamePreparePanel);
+	bg->addChild(gamePreparePanel);
 	createPreparePanel(gamePreparePanel);
 
 	//玩家信息--中
@@ -70,6 +70,16 @@ bool GameRoom::init()
 	roomController.sortPoker(myPokers);
 	//游戏发牌
 	shuffleCards(myPokers);
+
+	//叫地主
+	auto jiaoDiZhuNode = Node::create();
+	this->addChild(jiaoDiZhuNode);
+
+	//抢地主
+
+	//加倍
+
+	//出牌
 	
 	return true;
 }
@@ -113,41 +123,21 @@ void GameRoom::createPlayerInfo(Sprite* parent, Vec2 pos)
 
 void GameRoom::createPreparePanel(Node* parent)
 {
-	//解散房间
-	auto destoryRoomBtn = Button::create("images/Room/R_btnDisband.png");
-	parent->addChild(destoryRoomBtn);
-	destoryRoomBtn->setEnabled(false);
-	destoryRoomBtn->setPosition(Vec2(950, 150));
-	//返回大厅
-	auto backIndexBtn = Button::create("images/Room/R_btnBackIndex.png");
-	parent->addChild(backIndexBtn);
-	backIndexBtn->setPosition(destoryRoomBtn->getPosition() + Vec2(0, 120));
-	//复制房间号
-	auto copyRoomIdBtn = Button::create("images/Room/btnCopyRoom.png");
-	parent->addChild(copyRoomIdBtn);
-	copyRoomIdBtn->setPosition(backIndexBtn->getPosition() + Vec2(0, 120));
-	copyRoomIdBtn->setScale(
-		backIndexBtn->getContentSize().width / copyRoomIdBtn->getContentSize().width,
-		backIndexBtn->getContentSize().height / copyRoomIdBtn->getContentSize().height);
-	//开始游戏
-	auto startGameBtn = Button::create(
-		"images/Room/ox_24.png", 
-		"", 
-		"images/Room/ox_25.png");
-	startGameBtn->setVisible(false);
+	float padding = 20;
+	auto jiesanBtn = Button::create("images/Room/longBtnYellow.png");
+	parent->addChild(jiesanBtn);
+	jiesanBtn->setTitleText(ConfigController::getInstance()->getWordById(1015));
+	jiesanBtn->setTitleFontSize(35);
+	jiesanBtn->setPosition(
+		Vec2(Director::getInstance()->getVisibleSize().width/2, Director::getInstance()->getVisibleSize().height/2)
+		- Vec2(padding + 121, 0));
+
+	auto startGameBtn = Button::create("images/Room/longBtnBlue.png");
 	parent->addChild(startGameBtn);
-	startGameBtn->setPosition(Vec2(this->getContentSize().width/2, 150));
-
-	//准备
-	auto prepareBtn = Button::create("images/Room/ox_ready.png");
-	prepareBtn->setVisible(true);
-	parent->addChild(prepareBtn);
-	prepareBtn->setPosition(Vec2(this->getContentSize().width / 2, 150));
-}
-
-void GameRoom::createPlayGame(Node* parent)
-{
-
+	startGameBtn->setTitleText(ConfigController::getInstance()->getWordById(1016));
+	startGameBtn->setTitleFontSize(35);
+	startGameBtn->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2, Director::getInstance()->getVisibleSize().height / 2)
+		+ Vec2(padding + 121, 0));
 }
 
 void GameRoom::shuffleCards(std::vector<Poker>& myPokers)
@@ -415,6 +405,21 @@ void GameRoom::othersShuffleCardsHandle(float dt)
 }
 
 void GameRoom::sortCards()
+{
+
+}
+
+void GameRoom::callDiZhuBtn(Node* parentNode)
+{
+
+
+}
+
+void GameRoom::robDiZhuBtn(Node* parentNode)
+{
+}
+
+void GameRoom::playPokerBtn(Node* parentNode)
 {
 }
 
